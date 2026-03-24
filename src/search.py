@@ -3,7 +3,7 @@ Entrypoint for similarity search over the vector store.
 """
 
 import logging
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Iterator, List, Optional, Tuple, Union
 
 from langchain_core.documents import Document
 
@@ -23,16 +23,8 @@ def _format_context(docs: List[Tuple[Document, float]]) -> str:
     return "\n\n".join(doc.page_content for doc, _ in docs)
 
 
-def _answer_question(question: str) -> str:
-    """
-    Vectorize the question, search top-k chunks, build prompt, call LLM.
-
-    Args:
-        question: User question.
-
-    Returns:
-        LLM response grounded in retrieved context.
-    """
+def _answer_question_sync(question: str) -> str:
+    """Non-streaming answer: return full response string."""
     vector_store = get_vector_store()
     docs_with_scores = vector_store.similarity_search_with_score(
         question, k=SEARCH_K
@@ -41,10 +33,46 @@ def _answer_question(question: str) -> str:
     prompt = get_grounded_qa_prompt(context, question)
     llm = get_chat_model()
     response = llm.invoke(prompt)
-    return response.content
+    return str(response.content)
 
 
-def search_prompt(question: Optional[str] = None) -> Optional[Callable[[str], str]]:
+def _answer_question_stream(question: str) -> Iterator[str]:
+    """Streaming answer: yield response chunks."""
+    vector_store = get_vector_store()
+    docs_with_scores = vector_store.similarity_search_with_score(
+        question, k=SEARCH_K
+    )
+    context = _format_context(docs_with_scores)
+    prompt = get_grounded_qa_prompt(context, question)
+    llm = get_chat_model()
+    for chunk in llm.stream(prompt):
+        if hasattr(chunk, "content") and chunk.content:
+            yield chunk.content
+
+
+def _answer_question(
+    question: str,
+    *,
+    stream: bool = False,
+) -> Union[str, Iterator[str]]:
+    """
+    Vectorize the question, search top-k chunks, build prompt, call LLM.
+
+    Args:
+        question: User question.
+        stream: If True, yield response chunks; otherwise return full string.
+
+    Returns:
+        Full response string, or iterator of chunks when stream=True.
+    """
+    if stream:
+        return _answer_question_stream(question)
+    return _answer_question_sync(question)
+
+
+def search_prompt(
+    question: Optional[str] = None,
+) -> Optional[Callable[..., Union[str, Iterator[str]]]]:
     """
     Build a QA chain for grounded question answering.
 

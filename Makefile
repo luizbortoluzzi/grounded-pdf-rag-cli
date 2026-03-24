@@ -7,11 +7,13 @@ help:
 	@echo "  make install-dev - Install deps + dev tools (pytest, ruff)"
 	@echo "  make ingest     - Run PDF ingestion"
 	@echo "  make chat       - Run interactive chat"
+	@echo "  make health     - Run health check (config + DB)"
 	@echo "  make test       - Run tests"
 	@echo "  make lint       - Run ruff linter"
 	@echo "  make clean      - Remove cache and build artifacts"
 	@echo "  make docker-up  - Start PostgreSQL with pgvector"
 	@echo "  make docker-down - Stop PostgreSQL"
+	@echo "  make lock       - Regenerate requirements.txt from requirements.in"
 
 setup:
 	@echo "Creating virtual environment..."
@@ -31,6 +33,9 @@ ingest:
 chat:
 	python3 src/chat.py
 
+health:
+	python3 src/health.py
+
 test:
 	pytest
 
@@ -46,3 +51,6 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+lock:
+	pip-compile requirements.in -o requirements.txt

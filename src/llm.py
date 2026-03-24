@@ -19,6 +19,6 @@ def get_chat_model() -> ChatOpenAI:
         raise ConfigError("OPENAI_API_KEY is not set.")
     return ChatOpenAI(
         model=config.OPENAI_CHAT_MODEL,
-        openai_api_key=config.OPENAI_API_KEY,
+        openai_api_key=config.OPENAI_API_KEY,  # type: ignore[call-arg]
         temperature=0,
     )

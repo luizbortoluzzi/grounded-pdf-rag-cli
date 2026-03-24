@@ -1,5 +1,9 @@
 # Grounded PDF RAG CLI
 
+[![CI](https://github.com/luizbortoluzzi/grounded-pdf-rag-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/luizbortoluzzi/grounded-pdf-rag-cli/actions/workflows/ci.yml)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A CLI-based RAG (Retrieval-Augmented Generation) system that ingests PDFs into PostgreSQL with pgvector and answers questions using only the document content.
 
 ## Requirements
@@ -83,16 +87,25 @@ ANSWER: I don't have the necessary information to answer your question.
 ## Development
 
 ```bash
-make install-dev    # Install deps + pytest, ruff
+make install-dev    # Install deps + pytest, ruff, mypy
+pre-commit install  # Optional: run ruff + pytest on commit
+make health         # Check config and DB connectivity
 make test           # Run tests
 make lint           # Run ruff linter
+make lock           # Regenerate requirements.txt (pip-compile)
 make clean          # Remove cache artifacts
 ```
+
+## Optional Flags
+
+- **ingest**: `--version`, `--verbose`, `--progress` (progress bar for large PDFs)
+- **chat**: `--version`, `--verbose`, `--no-stream` (disable streaming)
 
 ## Project Structure
 
 ```
-├── .github/workflows/ci.yml  # GitHub Actions CI
+├── .github/workflows/ci.yml  # CI (tests, ruff, mypy, coverage)
+├── .pre-commit-config.yaml   # Pre-commit hooks (ruff, pytest)
 ├── ARCHITECTURE.md           # System design documentation
 ├── CHANGELOG.md              # Version history
 ├── Makefile                  # Development commands
@@ -114,7 +127,8 @@ make clean          # Remove cache artifacts
     ├── embeddings.py   # OpenAI embeddings
     ├── llm.py          # ChatOpenAI model
     ├── utils.py        # Helpers
-    └── exceptions.py  # Custom exceptions
+    ├── exceptions.py  # Custom exceptions
+    └── health.py      # Health check script
 tests/
     ├── test_config.py
     ├── test_prompts.py

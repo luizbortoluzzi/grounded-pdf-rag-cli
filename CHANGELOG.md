@@ -17,10 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Logging throughout ingestion and chat
 - Complete type hints across all modules
 - Unit tests for config, prompts, utils, exceptions
-- pyproject.toml with pytest and ruff configuration
+- pyproject.toml with pytest, ruff, and mypy configuration
 - Makefile for common development tasks
 - ARCHITECTURE.md documenting the system design
-- GitHub Actions CI for tests and linting
+- GitHub Actions CI (tests, ruff, mypy, coverage)
+- LICENSE (MIT)
+- Pre-commit hooks (ruff, pytest)
+- `--version` and `--verbose` flags for ingest and chat
+- `--progress` flag for ingestion (tqdm progress bar)
+- `--no-stream` flag for chat (disable streaming)
+- Streaming LLM responses in chat
+- Health check script (`make health`)
+- Pinned dependencies via pip-compile (requirements.in → requirements.txt)
 
 ### Technical Details
 

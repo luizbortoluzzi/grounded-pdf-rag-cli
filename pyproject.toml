@@ -41,3 +41,7 @@ python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+# LangChain stubs may lag behind runtime
+[[tool.mypy.overrides]]
+module = ["langchain_openai.*", "langchain_community.*", "langchain_postgres.*"]
+ignore_missing_imports = true

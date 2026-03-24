@@ -19,5 +19,5 @@ def get_embedding_model() -> OpenAIEmbeddings:
         raise ConfigError("OPENAI_API_KEY is not set.")
     return OpenAIEmbeddings(
         model=config.OPENAI_EMBEDDING_MODEL,
-        openai_api_key=config.OPENAI_API_KEY,
+        openai_api_key=config.OPENAI_API_KEY,  # type: ignore[call-arg]
     )

@@ -6,10 +6,14 @@ from typing import List
 
 from langchain_core.documents import Document
 from langchain_postgres.vectorstores import PGVector
+from tqdm import tqdm
 
 import config
 from embeddings import get_embedding_model
 from exceptions import DatabaseError
+
+# Batch size for progress reporting
+STORE_BATCH_SIZE = 50
 
 
 def get_vector_store(*, pre_delete_collection: bool = False) -> PGVector:
@@ -37,6 +41,7 @@ def get_vector_store(*, pre_delete_collection: bool = False) -> PGVector:
 def store_documents(
     documents: List[Document],
     pre_delete_collection: bool = False,
+    show_progress: bool = False,
 ) -> None:
     """
     Persist documents into the pgvector store.
@@ -44,9 +49,19 @@ def store_documents(
     Args:
         documents: List of documents to embed and store.
         pre_delete_collection: If True, clear collection before inserting.
+        show_progress: If True, show a progress bar (for large document sets).
     """
     vector_store = get_vector_store(pre_delete_collection=pre_delete_collection)
     try:
-        vector_store.add_documents(documents)
+        if show_progress and len(documents) > STORE_BATCH_SIZE:
+            for i in tqdm(
+                range(0, len(documents), STORE_BATCH_SIZE),
+                desc="Storing documents",
+                unit="batch",
+            ):
+                batch = documents[i : i + STORE_BATCH_SIZE]
+                vector_store.add_documents(batch)
+        else:
+            vector_store.add_documents(documents)
     except Exception as e:
         raise DatabaseError(f"Failed to store documents: {e}") from e

@@ -44,7 +44,10 @@ jobs:
           OPENAI_API_KEY: sk-test-placeholder
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/rag
         run: |
-          pytest --tb=short -v
+          pytest --tb=short -v --cov=src --cov-report=term-missing --cov-fail-under=15
 
       - name: Lint with ruff
         run: ruff check src tests
+
+      - name: Type check with mypy
+        run: mypy src --no-error-summary
