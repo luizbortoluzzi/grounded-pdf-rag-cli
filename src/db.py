@@ -2,11 +2,14 @@
 Database and pgvector store utilities.
 """
 
+from typing import List
+
 from langchain_core.documents import Document
 from langchain_postgres.vectorstores import PGVector
 
 import config
 from embeddings import get_embedding_model
+from exceptions import DatabaseError
 
 
 def get_vector_store(*, pre_delete_collection: bool = False) -> PGVector:
@@ -20,16 +23,19 @@ def get_vector_store(*, pre_delete_collection: bool = False) -> PGVector:
     Returns:
         Configured PGVector store instance.
     """
-    return PGVector(
-        embeddings=get_embedding_model(),
-        connection=config.get_database_url(),
-        collection_name=config.PG_VECTOR_COLLECTION_NAME,
-        pre_delete_collection=pre_delete_collection,
-    )
+    try:
+        return PGVector(
+            embeddings=get_embedding_model(),
+            connection=config.get_database_url(),
+            collection_name=config.PG_VECTOR_COLLECTION_NAME,
+            pre_delete_collection=pre_delete_collection,
+        )
+    except Exception as e:
+        raise DatabaseError(f"Failed to connect to vector store: {e}") from e
 
 
 def store_documents(
-    documents: list[Document],
+    documents: List[Document],
     pre_delete_collection: bool = False,
 ) -> None:
     """
@@ -40,4 +46,7 @@ def store_documents(
         pre_delete_collection: If True, clear collection before inserting.
     """
     vector_store = get_vector_store(pre_delete_collection=pre_delete_collection)
-    vector_store.add_documents(documents)
+    try:
+        vector_store.add_documents(documents)
+    except Exception as e:
+        raise DatabaseError(f"Failed to store documents: {e}") from e

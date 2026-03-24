@@ -2,7 +2,7 @@
 Prompt templates for grounded question answering.
 """
 
-# Fallback answer when the context does not contain relevant information
+# Fallback answer when context does not contain relevant information
 FALLBACK_ANSWER = "I don't have the necessary information to answer your question."
 
 GROUNDED_QA_TEMPLATE = """
